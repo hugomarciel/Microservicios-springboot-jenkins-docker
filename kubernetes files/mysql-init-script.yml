@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS justifications;
+    CREATE DATABASE IF NOT EXISTS authorizations;
+    CREATE DATABASE IF NOT EXISTS categorys;
+    CREATE DATABASE IF NOT EXISTS inandoutreg;

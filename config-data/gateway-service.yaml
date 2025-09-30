@@ -1,0 +1,40 @@
+server:
+  port: 8080
+  
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+  instance:
+    hostname: localhost
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: autorizations-service
+          uri: lb://autorizations-service
+          predicates:
+            - Path=/api/v1/authorizations/**
+        - id: categorys-service
+          uri: lb://categorys-service
+          predicates:
+            - Path=/api/v1/categorys/**
+            - Path=/api/v1/discounts/**
+            - Path=/api/v1/employees/**
+            - Path=/api/v1/extraHours/**
+            - Path=/api/v1/paycheck/**
+            - Path=/api/v1/latearrivals/**
+        - id: inandoutreg-service
+          uri: lb://inandoutreg-service
+          predicates:
+            - Path=/api/v1/inandoutreg/**
+        - id: justifications-service
+          uri: lb://justifications-service
+          predicates:
+            - Path=/api/v1/justificactions/**

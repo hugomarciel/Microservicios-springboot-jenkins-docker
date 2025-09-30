@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: categorys-service
+  cloud:
+    config:
+      enabled: true
+      uri: ${CONFIG_SERVER_URI}
+  datasource:
+    url: jdbc:mysql://localhost:3306/categorys
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update

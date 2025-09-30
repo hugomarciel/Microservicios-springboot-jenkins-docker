@@ -1,0 +1,23 @@
+server:
+  port: 8761
+
+eureka:
+  instance:
+    hostname: eureka-service # Este es el nombre del servicio en Kubernetes
+    prefer-ip-address: false # Usa el hostname en lugar de la dirección IP
+  client:
+    register-with-eureka: false # El servidor no se registra a sí mismo en modo standalone
+    fetch-registry: false # No necesita obtener el registro en modo standalone
+    service-url:
+      defaultZone: http://eureka-service:8761/eureka/ # URL del servicio en el clúster
+
+
+
+#server:
+#  port: 8761
+#eureka:
+#  client:
+#    fetch-registry: false
+#    register-with-eureka: false
+#    service-url: 
+#      default-zone: http://${eureka.instance.hostname}:${server.port}/eureka/

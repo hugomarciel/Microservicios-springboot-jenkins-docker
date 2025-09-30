@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eureka-service
+  labels:
+    app: eureka-service
+spec:
+  selector:
+    matchLabels:
+      app: eureka-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: eureka-service
+    spec:
+      containers:
+      - name: eureka-service
+        image: hugomarciel/eureka-service:latest  # Asegúrate de que la imagen esté correctamente definida
+        ports:
+        - containerPort: 8761  # El puerto por defecto de Eureka
+        env:
+        - name: CONFIG_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db  # Nombre del ConfigMap que contiene la URL de CONFIG_SERVER_URI
+              key: configserver   # El key dentro del ConfigMap
+     
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-service
+  labels:
+    app: eureka-service
+spec:
+  selector:
+    app: eureka-service
+  ports:
+    - nodePort: 30501
+      protocol: TCP
+      port: 8761
+      targetPort: 8761
+  type: NodePort

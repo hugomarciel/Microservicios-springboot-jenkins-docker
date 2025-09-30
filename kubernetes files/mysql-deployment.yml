@@ -1,0 +1,96 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:latest
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-root-credentials
+              key: password
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: password
+  
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        #- name: init-script
+        #  mountPath: /docker-entrypoint-initdb.d/init.sql
+        #  subPath: init.sql
+        lifecycle:
+            postStart:
+              exec:
+                command: [
+                  "sh", "-c",
+                  "sleep 10; \
+                  echo 'CREATE DATABASE IF NOT EXISTS justifications;' | mysql -u root -p${MYSQL_ROOT_PASSWORD};
+                  echo 'CREATE DATABASE IF NOT EXISTS autorizations;' | mysql -u root -p${MYSQL_ROOT_PASSWORD};
+                  echo 'CREATE DATABASE IF NOT EXISTS inandoutreg;' | mysql -u root -p${MYSQL_ROOT_PASSWORD};
+                  echo 'CREATE DATABASE IF NOT EXISTS categorys;' | mysql -u root -p${MYSQL_ROOT_PASSWORD}"
+                ]
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+      #- name: init-script
+      #  configMap:
+      #    name: mysql-init-script
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: mysql
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  type: NodePort
+  ports:
+  - port: 3306
+    targetPort: 3306
+    nodePort: 30006 # Puerto externo (puede cambiarse)
+  selector:
+    app: mysql
+

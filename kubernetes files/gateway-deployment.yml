@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment
+  labels:
+    app: gateway-service
+spec:
+  selector:
+    matchLabels:
+      app: gateway-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gateway-service
+    spec:
+      containers:
+      - name: gateway-service
+        image: hugomarciel/gateway-service:latest  # Asegúrate de que la imagen sea la correcta
+        ports:
+        - containerPort: 8080  # Puerto por defecto del Gateway
+        env:
+        - name: CONFIG_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db  # Nombre del ConfigMap
+              key: configserver     # Clave en el ConfigMap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+  labels:
+    app: gateway-service
+spec:
+  selector:
+    app: gateway-service
+  ports:
+    - nodePort: 30505
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort

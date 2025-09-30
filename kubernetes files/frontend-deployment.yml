@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: hugomarciel/payroll-frontend-ms:latest # Reemplaza con tu imagen Docker
+          ports:
+            - containerPort: 80 # Puerto del contenedor que expondrá el frontend
+          env:
+            - name: VITE_PAYROLL_BACKEND_SERVER
+              value: "gateway-serviceeeeee" # Dirección IP del servidor backend
+            - name: VITE_PAYROLL_BACKEND_PORT
+              value: "8080" # Puerto del backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80 # Puerto accesible desde fuera del clúster
+      targetPort: 80 # Puerto interno del contenedor
+  type: NodePort # O NodePort si no tienes LoadBalancer
+

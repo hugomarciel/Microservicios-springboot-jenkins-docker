@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autorizations-backend
+  labels:
+    app: autorizations-backend
+spec:
+  selector:
+    matchLabels:
+      app: autorizations-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: autorizations-backend
+    spec:
+      containers:
+      - name: autorizations-backend
+        image: hugomarciel/autorizations:latest
+        ports:
+        - containerPort: 8003
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: host
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: autorizationsdbname
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: password
+        - name: CONFIG_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: configserver
+        - name: EUREKA_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db  # Nombre del ConfigMap que contiene la URL de CONFIG_SERVER_URI
+              key: eurekaserver        
+            # Aquí está la URL del Config Server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autorizations-backend
+  labels:
+    app: autorizations-backend
+spec:
+  selector:
+    app: autorizations-backend
+  ports:
+    - nodePort: 30502
+      protocol: TCP
+      port: 8011
+      targetPort: 8003
+  type: NodePort

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: justifications-service
+  labels:
+    app: justifications-service
+spec:
+  selector:
+    matchLabels:
+      app: justifications-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: justifications-service
+    spec:
+      containers:
+      - name: justifications-service
+        image: hugomarciel/justifications:test1
+        ports:
+        - containerPort: 8002
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: host
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: justificationsdbname
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: password
+        - name: CONFIG_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: configserver
+        - name: EUREKA_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db  
+              key: eurekaserver        
+           
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: justifications-service
+  labels:
+    app: justifications-service
+spec:
+  selector:
+    app: justifications-service
+  ports:
+    - nodePort: 30500
+      protocol: TCP
+      port: 8010
+      targetPort: 8002
+  type: ClusterIP ##NodePort

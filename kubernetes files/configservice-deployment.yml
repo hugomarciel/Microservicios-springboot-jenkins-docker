@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-service
+  labels:
+    app: config-service
+spec:
+  replicas: 1  # Puedes ajustar el número de réplicas según lo necesites
+  selector:
+    matchLabels:
+      app: config-service
+  template:
+    metadata:
+      labels:
+        app: config-service
+    spec:
+      containers:
+        - name: config-service
+          image: hugomarciel/config-service:ultimo  # Aquí debes poner el nombre de tu imagen Docker
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "default"  # O el perfil que uses, por ejemplo, "prod"
+          imagePullPolicy: Always  # Cambiar a "IfNotPresent" si no quieres que siempre descargue la imagen
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-service
+spec:
+  selector:
+    app: config-service
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP  # Puede ser LoadBalancer si lo necesitas accesible externamente

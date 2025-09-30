@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inandoutreg-backend
+  labels:
+    app: inandoutreg-backend
+spec:
+  selector:
+    matchLabels:
+      app: inandoutreg-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: inandoutreg-backend
+    spec:
+      containers:
+      - name: inandoutreg-backend
+        image: hugomarciel/inandoutreg:latest
+        ports:
+        - containerPort: 8004
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: host
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: inandoutregdbname
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-user-credentials
+              key: password
+        - name: CONFIG_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db
+              key: configserver
+        - name: EUREKA_SERVER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: justifications-db  # Nombre del ConfigMap que contiene la URL de CONFIG_SERVER_URI
+              key: eurekaserver        
+            # Aquí está la URL del Config Server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inandoutreg-backend
+  labels:
+    app: inandoutreg-backend
+spec:
+  selector:
+    app: inandoutreg-backend
+  ports:
+    - nodePort: 30503
+      protocol: TCP
+      port: 8012
+      targetPort: 8004
+  type: NodePort
